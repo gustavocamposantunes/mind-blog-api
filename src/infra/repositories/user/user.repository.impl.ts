@@ -5,6 +5,7 @@ import { CreateUserDto } from '@/presentation/dtos/create-user-dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt'; // <-- Importe o bcrypt
 
 @Injectable()
 export class UserRepositoryImpl implements UserRepository {
@@ -12,9 +13,21 @@ export class UserRepositoryImpl implements UserRepository {
     @InjectRepository(User)
     private readonly typeormRepository: Repository<User>,
   ) {}
+
   async save(data: CreateUserDto): Promise<User> {
     try {
-      const newUser = this.typeormRepository.create(data);
+      const { password, ...userData } = data;
+
+      const saltRounds = 10;
+      const salt = await bcrypt.genSalt(saltRounds);
+
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      const newUser = this.typeormRepository.create({
+        ...userData,
+        password: hashedPassword,
+      });
+
       const savedUser = await this.typeormRepository.save(newUser);
       return savedUser;
     } catch (error) {
