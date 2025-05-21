@@ -4,9 +4,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { faker } from '@faker-js/faker';
+import * as bcrypt from 'bcrypt';
 
 import { UserRepositoryImpl } from './user.repository.impl';
 import { DBConnectionError } from '@/domain/errors';
+
+jest.mock('bcrypt', () => ({
+  genSalt: jest.fn(() => Promise.resolve('mockedSalt')),
+  hash: jest.fn(() => Promise.resolve('hashedPassword123')),
+  compare: jest.fn(() => Promise.resolve(true)),
+}));
 
 describe('UserRepositoryImpl', () => {
   let userRepositoryImpl: UserRepositoryImpl;
@@ -52,32 +59,70 @@ describe('UserRepositoryImpl', () => {
     };
 
     it('should create and save a new user successfully', async () => {
-      const userEntity = {
-        id: 1,
-        ...createUserDto,
+      const expectedHashedPassword = 'hashedPassword123';
+
+      const userInstanceToBeCreatedAndSaved: User = {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: expectedHashedPassword,
       } as User;
 
-      typeormRepository.create.mockReturnValue(userEntity);
-      typeormRepository.save.mockResolvedValue(userEntity);
+      const savedUserEntity: User = {
+        id: 1,
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: expectedHashedPassword,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      } as User;
+
+      typeormRepository.create.mockReturnValue(userInstanceToBeCreatedAndSaved);
+      typeormRepository.save.mockResolvedValue(savedUserEntity);
 
       const result = await userRepositoryImpl.save(createUserDto);
 
-      expect(typeormRepository.create).toHaveBeenCalledWith(createUserDto);
-      expect(typeormRepository.save).toHaveBeenCalledWith(userEntity);
-      expect(result).toEqual(userEntity);
+      expect(bcrypt.genSalt).toHaveBeenCalledWith(10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(
+        createUserDto.password,
+        'mockedSalt',
+      );
+
+      expect(typeormRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createUserDto.name,
+          email: createUserDto.email,
+          password: expectedHashedPassword,
+        }),
+      );
+
+      expect(typeormRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createUserDto.name,
+          email: createUserDto.email,
+          password: expectedHashedPassword,
+        }),
+      );
+
+      expect(result).toEqual(savedUserEntity);
       expect(result.id).toBe(1);
+      expect(result.password).toBe(expectedHashedPassword);
     });
 
     it('should throw a DBConnectionError if there is a database connection issue', async () => {
-      const userInstance = new User();
-      Object.assign(userInstance, { id: 1, ...createUserDto });
+      const expectedHashedPassword = 'hashedPassword123';
+
+      const userInstanceToBeCreatedAndSaved: User = {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: expectedHashedPassword,
+      } as User;
 
       const simulatedDbConnectionError = new Error(
         'connect ECONNREFUSED 127.0.0.1:3306',
       );
       simulatedDbConnectionError.name = 'ConnectionRefusedError';
 
-      typeormRepository.create.mockReturnValue(userInstance);
+      typeormRepository.create.mockReturnValue(userInstanceToBeCreatedAndSaved);
       typeormRepository.save.mockRejectedValue(simulatedDbConnectionError);
 
       await expect(userRepositoryImpl.save(createUserDto)).rejects.toThrow(
@@ -87,9 +132,25 @@ describe('UserRepositoryImpl', () => {
         'Não foi possível conectar ao servidor de banco de dados.',
       );
 
-      expect(typeormRepository.create).toHaveBeenCalledWith(createUserDto);
-      expect(typeormRepository.save).toHaveBeenCalledWith(expect.any(User));
-      expect(typeormRepository.save).toHaveBeenCalledWith(userInstance);
+      expect(bcrypt.genSalt).toHaveBeenCalledWith(10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(
+        createUserDto.password,
+        'mockedSalt',
+      );
+      expect(typeormRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createUserDto.name,
+          email: createUserDto.email,
+          password: expectedHashedPassword,
+        }),
+      );
+      expect(typeormRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createUserDto.name,
+          email: createUserDto.email,
+          password: expectedHashedPassword,
+        }),
+      );
     });
   });
 });
