@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { faker } from '@faker-js/faker';
 
 import { UserRepositoryImpl } from './user.repository.impl';
+import { DBConnectionError } from '@/domain/errors';
 
 describe('UserRepositoryImpl', () => {
   let userRepositoryImpl: UserRepositoryImpl;
@@ -67,17 +68,28 @@ describe('UserRepositoryImpl', () => {
       expect(result.id).toBe(1);
     });
 
-    it.skip('should throw an error if saving fails', async () => {
-      const errorMessage = 'Database error';
-      typeormRepository.create.mockReturnValue({ ...createUserDto } as User);
-      typeormRepository.save.mockRejectedValue(new Error(errorMessage));
+    it('should throw a DBConnectionError if there is a database connection issue', async () => {
+      const userInstance = new User();
+      Object.assign(userInstance, { id: 1, ...createUserDto });
+
+      const simulatedDbConnectionError = new Error(
+        'connect ECONNREFUSED 127.0.0.1:3306',
+      );
+      simulatedDbConnectionError.name = 'ConnectionRefusedError';
+
+      typeormRepository.create.mockReturnValue(userInstance);
+      typeormRepository.save.mockRejectedValue(simulatedDbConnectionError);
 
       await expect(userRepositoryImpl.save(createUserDto)).rejects.toThrow(
-        errorMessage,
+        DBConnectionError,
+      );
+      await expect(userRepositoryImpl.save(createUserDto)).rejects.toThrow(
+        'Não foi possível conectar ao servidor de banco de dados.',
       );
 
       expect(typeormRepository.create).toHaveBeenCalledWith(createUserDto);
-      expect(typeormRepository.save).toHaveBeenCalled();
+      expect(typeormRepository.save).toHaveBeenCalledWith(expect.any(User));
+      expect(typeormRepository.save).toHaveBeenCalledWith(userInstance);
     });
   });
 });
