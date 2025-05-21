@@ -1,6 +1,21 @@
-import { Controller } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CreateUserDto } from '../dtos';
+import { User } from '@/domain/entities';
+import { CreateUserUseCase } from '@/domain/usecases/user';
 
 @ApiTags('User')
 @Controller('user')
-export class UserController {}
+export class UserController {
+  constructor(
+    @Inject('CreateUserUseCase')
+    private readonly createUserUseCase: CreateUserUseCase,
+  ) { }
+
+  @Post()
+  @ApiOperation({ summary: 'Cria um novo usuário' })
+  @ApiResponse({ status: 201, description: 'Usuário criada com sucesso.' })
+  async create(@Body() userData: CreateUserDto): Promise<User> {
+    return this.createUserUseCase.execute(userData);
+  }
+}
