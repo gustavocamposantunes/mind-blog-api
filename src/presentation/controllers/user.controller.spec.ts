@@ -4,6 +4,7 @@ import { CreateUserUseCase } from '@/domain/usecases/user';
 import { CreateUserDto } from '../dtos';
 import { faker } from '@faker-js/faker/.';
 import { User } from '@/domain/entities';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 
 describe('UserController', () => {
   let userController: UserController;
@@ -53,5 +54,21 @@ describe('UserController', () => {
     expect(result).toEqual(expectedUser);
     expect(createUserUseCase.execute).toHaveBeenCalledWith(userData);
     expect(createUserUseCase.execute).toHaveBeenCalledTimes(1);
+  });
+
+  it('should throw an error if required field is missing', async () => {
+    const invalidUserData = {} as CreateUserDto;
+
+    const validationPipe = new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+
+    await expect(
+      validationPipe.transform(invalidUserData, {
+        type: 'body',
+        metatype: CreateUserDto,
+      }),
+    ).rejects.toThrow(BadRequestException);
   });
 });
