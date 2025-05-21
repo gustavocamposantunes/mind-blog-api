@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UserController } from '../controllers';
+import { UserController } from '@/presentation/controllers';
 import { UserRepositoryImpl } from '@/infra/repositories';
 import { CreateUserUseCaseImpl } from '@/data/usecases/user/create-user-usercase.impl';
 import { TypeOrmModule } from '@nestjs/typeorm';

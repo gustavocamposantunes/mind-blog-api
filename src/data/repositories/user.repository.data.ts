@@ -8,4 +8,8 @@ export class UserRepositoryData implements UserRepository {
   save(user: CreateUserDto): Promise<User> {
     return this.userRepositoryImpl.save(user);
   }
+
+  findByEmail(email: string): Promise<User | null> {
+    return this.userRepositoryImpl.findByEmail(email);
+  }
 }

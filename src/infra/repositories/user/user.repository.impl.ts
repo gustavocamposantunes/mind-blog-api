@@ -5,7 +5,7 @@ import { CreateUserDto } from '@/presentation/dtos/create-user-dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt'; // <-- Importe o bcrypt
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserRepositoryImpl implements UserRepository {
@@ -37,6 +37,20 @@ export class UserRepositoryImpl implements UserRepository {
         );
       }
 
+      throw error;
+    }
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    try {
+      const user = await this.typeormRepository.findOne({ where: { email } });
+      return user || null;
+    } catch (error) {
+      if (error.message && error.message.includes('connect ECONNREFUSED')) {
+        throw new DBConnectionError(
+          'Não foi possível conectar ao servidor de banco de dados.',
+        );
+      }
       throw error;
     }
   }
