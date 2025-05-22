@@ -45,6 +45,7 @@ describe('UserController', () => {
       password: userData.password,
       createdAt: new Date(),
       updatedAt: new Date(),
+      posts: [],
     };
 
     jest.spyOn(createUserUseCase, 'execute').mockResolvedValue(expectedUser);

@@ -9,9 +9,11 @@ import { UserRepositoryImpl } from '@/infra/repositories';
 import { AuthController } from '@/presentation/controllers';
 import { AuthUserUseCaseImpl } from '@/data/usecases/auth/auth-user.use-case.impl';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtStrategy } from '@/infra/auth/jwt.strategy';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forFeature([User]),
     PassportModule,
     JwtModule.registerAsync({
@@ -32,8 +34,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       provide: 'AuthUserUseCase',
       useClass: AuthUserUseCaseImpl,
     },
+    JwtStrategy,
   ],
   controllers: [AuthController],
-  exports: [UserRepositoryImpl, 'AuthUserUseCase', JwtModule],
+  exports: [
+    UserRepositoryImpl,
+    'AuthUserUseCase',
+    JwtStrategy,
+    JwtModule,
+    PassportModule,
+  ],
 })
 export class AuthModule {}

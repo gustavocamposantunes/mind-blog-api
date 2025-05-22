@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Post } from './post.entity';
 
 @Entity('users')
 export class User {
@@ -25,4 +26,7 @@ export class User {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @OneToMany(() => Post, (post) => post.author)
+  posts: Post[];
 }

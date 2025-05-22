@@ -31,39 +31,17 @@ export class AuthController {
     type: AuthUserResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
-  @ApiBody({ type: LoginUserDto })
+  @ApiBody({
+    description: 'Dados para realizar autenticação',
+    schema: {
+      example: {
+        email: 'Ettie94@yahoo.com',
+        password: 'ZbEOMbWZC5hjfEU',
+      },
+    },
+  })
   async login(@Body() credentials: LoginUserDto): Promise<AuthUserResponseDto> {
     const authResponse = await this.authUserUseCase.execute(credentials);
     return authResponse;
   }
-
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('profile')
-  // @ApiOperation({ summary: 'Retorna o perfil do usuário autenticado' })
-  // @ApiResponse({ status: 200, description: 'Perfil do usuário', type: User })
-  // @ApiResponse({ status: 401, description: 'Não autorizado' })
-  // getProfile(@Request() req: any) {
-  //   return req.user;
-  // }
-
-  // @UseGuards(AuthGuard('local'))
-  // @Post('login-passport')
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOperation({ summary: 'Login usando Passport.js Local Strategy' })
-  // @ApiResponse({ status: 200, description: 'Login bem-sucedido', type: AuthUserResponseDto })
-  // @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
-  // async loginWithPassport(@Request() req: any): Promise<AuthUserResponseDto> {
-  //   const user = req.user;
-  //   const payload = { sub: user.id, email: user.email, name: user.name };
-  //   const accessToken = this.jwtService.sign(payload);
-  //
-  //   return {
-  //     accessToken,
-  //     user: {
-  //       id: user.id,
-  //       name: user.name,
-  //       email: user.email,
-  //     },
-  //   };
-  // }
 }

@@ -11,6 +11,16 @@ async function bootstrap() {
     .setDescription('API para gerenciamento de um blog')
     .setVersion('1.0')
     .addTag('Posts')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        in: 'header',
+      },
+      'jwt', // <- esse nome é importante para combinar com @ApiBearerAuth('jwt')
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
