@@ -75,7 +75,7 @@ export class PostController {
     return posts;
   }
 
-  @Get(':id') // GET /posts/:id
+  @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Busca um post por ID' })
   @ApiResponse({
