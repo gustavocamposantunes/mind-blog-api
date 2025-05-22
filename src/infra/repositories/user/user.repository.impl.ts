@@ -1,7 +1,7 @@
 import { User } from '@/domain/entities';
 import { DBConnectionError } from '@/domain/errors';
 import { UserRepository } from '@/domain/repositories/user/user.repository';
-import { CreateUserDto } from '@/presentation/dtos/create-user-dto';
+import { CreateUserDto } from '@/presentation/dtos/create-user.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

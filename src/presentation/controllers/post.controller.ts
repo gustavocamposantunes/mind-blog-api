@@ -7,6 +7,8 @@ import {
   UseGuards,
   Request,
   Inject,
+  Get,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -20,6 +22,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreatePostDto } from '../dtos/create-post.dto';
 import { Post as PostEntity } from '@/domain/entities/post.entity';
 import { CreatePostUseCase } from '@/domain/usecases/post/create-post.usecase';
+import { ListPostsResponseDto } from '../dtos/list-posts.response.dto';
+import { ListPostsQueryDto } from '../dtos/list-posts.query.dto';
+import { ListPostsUseCase } from '@/domain/usecases/post/list-posts.usecase';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -27,6 +32,8 @@ export class PostController {
   constructor(
     @Inject('CreatePostUseCase')
     private readonly createPostUseCase: CreatePostUseCase,
+    @Inject('ListPostsUseCase')
+    private readonly listPostsUseCase: ListPostsUseCase,
   ) {}
 
   @Post()
@@ -57,5 +64,21 @@ export class PostController {
 
     const newPost = await this.createPostUseCase.execute(postDataWithAuthor);
     return newPost;
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Lista todos os posts com paginação' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de posts retornada com sucesso.',
+    type: ListPostsResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Parâmetros de query inválidos.' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt')) // Protege esta rota também
+  async list(@Query() query: ListPostsQueryDto): Promise<ListPostsResponseDto> {
+    const posts = await this.listPostsUseCase.execute(query);
+    return posts;
   }
 }

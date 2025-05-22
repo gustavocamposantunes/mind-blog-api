@@ -1,5 +1,5 @@
 import { User } from '@/domain/entities';
-import { CreateUserDto } from '@/presentation/dtos/create-user-dto';
+import { CreateUserDto } from '@/presentation/dtos/create-user.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
