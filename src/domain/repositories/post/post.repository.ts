@@ -6,4 +6,5 @@ import { ListPostsResponseDto } from '@/presentation/dtos/list-posts.response.dt
 export interface PostRepository {
   save(postData: CreatePostDto): Promise<Post>;
   list(query: ListPostsQueryDto): Promise<ListPostsResponseDto>;
+  findById(id: number): Promise<Post | null>;
 }

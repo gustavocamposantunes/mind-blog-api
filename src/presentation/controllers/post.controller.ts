@@ -4,20 +4,14 @@ import {
   Post,
   HttpStatus,
   HttpCode,
-  UseGuards,
   Request,
   Inject,
   Get,
   Query,
+  Param,
+  NotFoundException,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreatePostDto } from '../dtos/create-post.dto';
 import { Post as PostEntity } from '@/domain/entities/post.entity';
@@ -25,6 +19,7 @@ import { CreatePostUseCase } from '@/domain/usecases/post/create-post.usecase';
 import { ListPostsResponseDto } from '../dtos/list-posts.response.dto';
 import { ListPostsQueryDto } from '../dtos/list-posts.query.dto';
 import { ListPostsUseCase } from '@/domain/usecases/post/list-posts.usecase';
+import { FetchPostUseCase } from '@/domain/usecases/post/fetch-post.usecase';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -34,6 +29,8 @@ export class PostController {
     private readonly createPostUseCase: CreatePostUseCase,
     @Inject('ListPostsUseCase')
     private readonly listPostsUseCase: ListPostsUseCase,
+    @Inject('FetchPostUseCase')
+    private readonly fetchPostUseCase: FetchPostUseCase,
   ) {}
 
   @Post()
@@ -47,8 +44,6 @@ export class PostController {
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   @ApiResponse({ status: 401, description: 'Não autorizado.' })
   @ApiBody({ type: CreatePostDto })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
   async create(
     @Body() postData: CreatePostDto,
     @Request() req: any,
@@ -75,10 +70,27 @@ export class PostController {
     type: ListPostsResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Parâmetros de query inválidos.' })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt')) // Protege esta rota também
   async list(@Query() query: ListPostsQueryDto): Promise<ListPostsResponseDto> {
     const posts = await this.listPostsUseCase.execute(query);
     return posts;
+  }
+
+  @Get(':id') // GET /posts/:id
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Busca um post por ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Post encontrado com sucesso.',
+    type: PostEntity,
+  })
+  @ApiResponse({ status: 404, description: 'Post não encontrado.' })
+  async findById(@Param('id') id: number): Promise<PostEntity> {
+    const post = await this.fetchPostUseCase.execute(id);
+
+    if (!post) {
+      throw new NotFoundException(`Post com ID ${id} não encontrado.`);
+    }
+
+    return post;
   }
 }

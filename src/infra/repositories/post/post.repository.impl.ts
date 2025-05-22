@@ -58,4 +58,18 @@ export class PostRepositoryImpl implements PostRepository {
       throw error;
     }
   }
+
+  async findById(id: number): Promise<Post | null> {
+    try {
+      const post = await this.typeormRepository.findOne({ where: { id } });
+      return post || null;
+    } catch (error) {
+      if (error.message && error.message.includes('connect ECONNREFUSED')) {
+        throw new DBConnectionError(
+          'Não foi possível conectar ao servidor de banco de dados.',
+        );
+      }
+      throw error;
+    }
+  }
 }

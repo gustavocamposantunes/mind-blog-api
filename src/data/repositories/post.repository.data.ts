@@ -18,4 +18,8 @@ export class PostRepositoryData implements PostRepository {
   async list(query: ListPostsQueryDto): Promise<ListPostsResponseDto> {
     return this.postRepositoryImpl.list(query);
   }
+
+  async findById(id: number): Promise<Post | null> {
+    return this.postRepositoryImpl.findById(id);
+  }
 }

@@ -7,6 +7,7 @@ import { PostRepositoryImpl } from '@/infra/repositories/post/post.repository.im
 import { CreatePostUseCaseImpl } from '@/data/usecases/post/create-post.usecase.impl';
 import { AuthModule } from '../auth/auth.module';
 import { ListPostsUseCaseImpl } from '@/data/usecases/post/list-posts.usecase.impl';
+import { FetchPostUseCaseImpl } from '@/data/usecases/post/fetch-post.usecase.impl';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Post]), AuthModule],
@@ -19,6 +20,10 @@ import { ListPostsUseCaseImpl } from '@/data/usecases/post/list-posts.usecase.im
     {
       provide: 'ListPostsUseCase',
       useClass: ListPostsUseCaseImpl,
+    },
+    {
+      provide: 'FetchPostUseCase',
+      useClass: FetchPostUseCaseImpl,
     },
   ],
   controllers: [PostController],
