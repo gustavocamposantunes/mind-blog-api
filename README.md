@@ -26,6 +26,14 @@ Para garantir a qualidade do código e a padronização do histórico de commits
 * Redefinição de senha
 * Autenticação e autorização
 
+# Instruções
+
+## Variável de ambiente
+* É necessário copiar os arquivos do .env.example para um .env
+
+## MySQL com docker-compose
+* Tendo o docker-compose instalado, para rodar o mysql é necessário rodar o comando "docker-compose up"
+
 ## Installation
 
 ```bash
