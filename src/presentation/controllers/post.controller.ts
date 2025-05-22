@@ -10,8 +10,15 @@ import {
   Query,
   Param,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { CreatePostDto } from '../dtos/create-post.dto';
 import { Post as PostEntity } from '@/domain/entities/post.entity';
@@ -20,6 +27,7 @@ import { ListPostsResponseDto } from '../dtos/list-posts.response.dto';
 import { ListPostsQueryDto } from '../dtos/list-posts.query.dto';
 import { ListPostsUseCase } from '@/domain/usecases/post/list-posts.usecase';
 import { FetchPostUseCase } from '@/domain/usecases/post/fetch-post.usecase';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -44,13 +52,13 @@ export class PostController {
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   @ApiResponse({ status: 401, description: 'Não autorizado.' })
   @ApiBody({ type: CreatePostDto })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   async create(
     @Body() postData: CreatePostDto,
     @Request() req: any,
   ): Promise<PostEntity> {
     const userId = req.user.userId;
-
-    console.log('userID' + userId);
 
     const postDataWithAuthor = {
       ...postData,
