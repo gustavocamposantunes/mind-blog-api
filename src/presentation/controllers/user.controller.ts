@@ -19,7 +19,7 @@ export class UserController {
     private readonly createUserUseCase: CreateUserUseCase,
   ) { }
 
-  @Post()
+  @Post('register')
   @ApiOperation({ summary: 'Cria um novo usuário' })
   @ApiResponse({ status: 201, description: 'Usuário criado com sucesso.' })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
