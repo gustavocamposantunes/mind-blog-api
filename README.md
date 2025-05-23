@@ -29,39 +29,10 @@ Para garantir a qualidade do código e a padronização do histórico de commits
 # Instruções
 
 ## Variável de ambiente
-* É necessário copiar os arquivos do .env.example para um .env
+* É necessário copiar os arquivos do ``.env.example`` para o .env
 
 ## MySQL com docker-compose
 * Tendo o docker-compose instalado, para rodar o mysql é necessário rodar o comando "docker-compose up"
 
-## Installation
-
-```bash
-$ pnpm install
-```
-
-## Running the app
-
-```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
+## Rodar o projeto
+* Utilize ``pnpm run start``
