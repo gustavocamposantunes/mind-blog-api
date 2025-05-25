@@ -31,6 +31,22 @@ describe('UserController', () => {
     expect(userController).toBeDefined();
   });
 
+  it('should throw an error if required field is missing', async () => {
+    const invalidUserData = {} as CreateUserDto;
+
+    const validationPipe = new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+
+    await expect(
+      validationPipe.transform(invalidUserData, {
+        type: 'body',
+        metatype: CreateUserDto,
+      }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
   it('should create a user', async () => {
     const userData: CreateUserDto = {
       email: faker.internet.email(),
@@ -55,21 +71,5 @@ describe('UserController', () => {
     expect(result).toEqual(expectedUser);
     expect(createUserUseCase.execute).toHaveBeenCalledWith(userData);
     expect(createUserUseCase.execute).toHaveBeenCalledTimes(1);
-  });
-
-  it('should throw an error if required field is missing', async () => {
-    const invalidUserData = {} as CreateUserDto;
-
-    const validationPipe = new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    });
-
-    await expect(
-      validationPipe.transform(invalidUserData, {
-        type: 'body',
-        metatype: CreateUserDto,
-      }),
-    ).rejects.toThrow(BadRequestException);
   });
 });
