@@ -7,8 +7,8 @@ import { UserModule, AuthModule, PostModule } from '@/infra/modules';
   imports: [
     ConfigModule.forRoot(),
     DatabaseModule,
-    UserModule,
     AuthModule,
+    UserModule,
     PostModule,
   ],
 })
