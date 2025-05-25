@@ -17,7 +17,9 @@ export class UserController {
   constructor(
     @Inject('CreateUserUseCase')
     private readonly createUserUseCase: CreateUserUseCase,
-  ) { }
+  ) {
+    /* Empty block */
+  }
 
   @Post('register')
   @ApiOperation({ summary: 'Cria um novo usuário' })
