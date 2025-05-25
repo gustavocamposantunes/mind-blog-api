@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostController } from './post.controller';
-import { CreatePostDto } from '../dtos/create-post.dto';
-import { faker } from '@faker-js/faker/.';
-import { Post } from '@/domain/entities/post.entity';
 import { CreatePostUseCase } from '@/domain/usecases/post/create-post.usecase';
+import { expectedPost, mockRequest, postData } from '../test/post';
+import { UnauthorizedException } from '@nestjs/common';
 
 describe('PostController', () => {
   let postController: PostController;
@@ -42,38 +41,27 @@ describe('PostController', () => {
     expect(postController).toBeDefined();
   });
 
+  it('should throw UnauthorizedException when createPostUseCase throws it', async () => {
+    const unauthorizedException = new UnauthorizedException(
+      'Usuário não autorizado para criar este tipo de post.',
+    );
+    (createPostUseCase.execute as jest.Mock).mockRejectedValueOnce(
+      unauthorizedException,
+    );
+
+    await expect(postController.create(postData, mockRequest)).rejects.toThrow(
+      unauthorizedException,
+    );
+
+    expect(createPostUseCase.execute).toHaveBeenCalledWith({
+      ...postData,
+      author_id: mockRequest.user.userId,
+    });
+    expect(createPostUseCase.execute).toHaveBeenCalledTimes(1);
+  });
+
   it('should create a post correctly', async () => {
-    const postData: CreatePostDto = {
-      author_id: faker.number.int(),
-      title: faker.commerce.productName(),
-      content: faker.lorem.paragraphs(3),
-    };
-
-    const expectedPost: Post = {
-      title: postData.title,
-      content: postData.content,
-      author_id: postData.author_id,
-      author: {
-        id: 1,
-        email: faker.internet.email(),
-        name: faker.person.fullName(),
-        password: faker.internet.password(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        posts: [],
-      },
-      id: 2,
-      publishedAt: faker.date.anytime(),
-      updatedAt: faker.date.anytime(),
-    };
-
     jest.spyOn(createPostUseCase, 'execute').mockResolvedValue(expectedPost);
-
-    const mockRequest = {
-      user: {
-        userId: expectedPost.author_id,
-      },
-    };
 
     const result = await postController.create(postData, mockRequest);
 
