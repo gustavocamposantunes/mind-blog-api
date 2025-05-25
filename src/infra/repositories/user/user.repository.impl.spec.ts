@@ -58,7 +58,26 @@ describe('UserRepositoryImpl', () => {
       password: faker.internet.password(),
     };
 
-    it('should throw a DBConnectionError if there is a database connection issue', async () => {
+    it('should throw a DBConnectionError if there is a database connection issue on findByEmail', async () => {
+      const simulatedDbConnectionError = new Error('connect ECONNREFUSED');
+      simulatedDbConnectionError.name = 'ConnectionRefusedError';
+      typeormRepository.findOne = jest
+        .fn()
+        .mockRejectedValue(simulatedDbConnectionError);
+      await expect(
+        userRepositoryImpl.findByEmail(createUserDto.email),
+      ).rejects.toThrow(DBConnectionError);
+      await expect(
+        userRepositoryImpl.findByEmail(createUserDto.email),
+      ).rejects.toThrow(
+        'Não foi possível conectar ao servidor de banco de dados.',
+      );
+      expect(typeormRepository.findOne).toHaveBeenCalledWith({
+        where: { email: createUserDto.email },
+      });
+    });
+
+    it('should throw a DBConnectionError if there is a database connection issue on save', async () => {
       const expectedHashedPassword = 'hashedPassword123';
 
       const userInstanceToBeCreatedAndSaved: User = {
