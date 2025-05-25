@@ -58,6 +58,51 @@ describe('UserRepositoryImpl', () => {
       password: faker.internet.password(),
     };
 
+    it('should throw a DBConnectionError if there is a database connection issue', async () => {
+      const expectedHashedPassword = 'hashedPassword123';
+
+      const userInstanceToBeCreatedAndSaved: User = {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: expectedHashedPassword,
+      } as User;
+
+      const simulatedDbConnectionError = new Error(
+        'connect ECONNREFUSED 127.0.0.1:3306',
+      );
+      simulatedDbConnectionError.name = 'ConnectionRefusedError';
+
+      typeormRepository.create.mockReturnValue(userInstanceToBeCreatedAndSaved);
+      typeormRepository.save.mockRejectedValue(simulatedDbConnectionError);
+
+      await expect(userRepositoryImpl.save(createUserDto)).rejects.toThrow(
+        DBConnectionError,
+      );
+      await expect(userRepositoryImpl.save(createUserDto)).rejects.toThrow(
+        'Não foi possível conectar ao servidor de banco de dados.',
+      );
+
+      expect(bcrypt.genSalt).toHaveBeenCalledWith(10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(
+        createUserDto.password,
+        'mockedSalt',
+      );
+      expect(typeormRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createUserDto.name,
+          email: createUserDto.email,
+          password: expectedHashedPassword,
+        }),
+      );
+      expect(typeormRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: createUserDto.name,
+          email: createUserDto.email,
+          password: expectedHashedPassword,
+        }),
+      );
+    });
+
     it('should create and save a new user successfully', async () => {
       const expectedHashedPassword = 'hashedPassword123';
 
@@ -106,51 +151,6 @@ describe('UserRepositoryImpl', () => {
       expect(result).toEqual(savedUserEntity);
       expect(result.id).toBe(1);
       expect(result.password).toBe(expectedHashedPassword);
-    });
-
-    it('should throw a DBConnectionError if there is a database connection issue', async () => {
-      const expectedHashedPassword = 'hashedPassword123';
-
-      const userInstanceToBeCreatedAndSaved: User = {
-        name: createUserDto.name,
-        email: createUserDto.email,
-        password: expectedHashedPassword,
-      } as User;
-
-      const simulatedDbConnectionError = new Error(
-        'connect ECONNREFUSED 127.0.0.1:3306',
-      );
-      simulatedDbConnectionError.name = 'ConnectionRefusedError';
-
-      typeormRepository.create.mockReturnValue(userInstanceToBeCreatedAndSaved);
-      typeormRepository.save.mockRejectedValue(simulatedDbConnectionError);
-
-      await expect(userRepositoryImpl.save(createUserDto)).rejects.toThrow(
-        DBConnectionError,
-      );
-      await expect(userRepositoryImpl.save(createUserDto)).rejects.toThrow(
-        'Não foi possível conectar ao servidor de banco de dados.',
-      );
-
-      expect(bcrypt.genSalt).toHaveBeenCalledWith(10);
-      expect(bcrypt.hash).toHaveBeenCalledWith(
-        createUserDto.password,
-        'mockedSalt',
-      );
-      expect(typeormRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: createUserDto.name,
-          email: createUserDto.email,
-          password: expectedHashedPassword,
-        }),
-      );
-      expect(typeormRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: createUserDto.name,
-          email: createUserDto.email,
-          password: expectedHashedPassword,
-        }),
-      );
     });
   });
 });
