@@ -41,32 +41,34 @@ describe('PostController', () => {
     expect(postController).toBeDefined();
   });
 
-  it('should throw UnauthorizedException when createPostUseCase throws it', async () => {
-    const unauthorizedException = new UnauthorizedException(
-      'Usuário não autorizado para criar este tipo de post.',
-    );
-    (createPostUseCase.execute as jest.Mock).mockRejectedValueOnce(
-      unauthorizedException,
-    );
+  describe('create', () => {
+    it('should throw UnauthorizedException when createPostUseCase throws it', async () => {
+      const unauthorizedException = new UnauthorizedException(
+        'Usuário não autorizado para criar este tipo de post.',
+      );
+      (createPostUseCase.execute as jest.Mock).mockRejectedValueOnce(
+        unauthorizedException,
+      );
 
-    await expect(postController.create(postData, mockRequest)).rejects.toThrow(
-      unauthorizedException,
-    );
+      await expect(
+        postController.create(postData, mockRequest),
+      ).rejects.toThrow(unauthorizedException);
 
-    expect(createPostUseCase.execute).toHaveBeenCalledWith({
-      ...postData,
-      author_id: mockRequest.user.userId,
+      expect(createPostUseCase.execute).toHaveBeenCalledWith({
+        ...postData,
+        author_id: mockRequest.user.userId,
+      });
+      expect(createPostUseCase.execute).toHaveBeenCalledTimes(1);
     });
-    expect(createPostUseCase.execute).toHaveBeenCalledTimes(1);
-  });
 
-  it('should create a post correctly', async () => {
-    jest.spyOn(createPostUseCase, 'execute').mockResolvedValue(expectedPost);
+    it('should create a post correctly', async () => {
+      jest.spyOn(createPostUseCase, 'execute').mockResolvedValue(expectedPost);
 
-    const result = await postController.create(postData, mockRequest);
+      const result = await postController.create(postData, mockRequest);
 
-    expect(result).toEqual(expectedPost);
-    expect(createPostUseCase.execute).toHaveBeenCalledWith(postData);
-    expect(createPostUseCase.execute).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(expectedPost);
+      expect(createPostUseCase.execute).toHaveBeenCalledWith(postData);
+      expect(createPostUseCase.execute).toHaveBeenCalledTimes(1);
+    });
   });
 });
