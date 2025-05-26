@@ -26,7 +26,7 @@ import { CreatePostUseCase } from '@/domain/usecases/post/create-post.usecase';
 import { ListPostsResponseDto } from '../dtos/list-posts.response.dto';
 import { ListPostsQueryDto } from '../dtos/list-posts.query.dto';
 import { ListPostsUseCase } from '@/domain/usecases/post/list-posts.usecase';
-import { FetchPostUseCase } from '@/domain/usecases/post/fetch-post.usecase';
+import { FindPostByIdUseCase } from '@/domain/usecases/post/find-post-by-id.usecase';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Posts')
@@ -37,8 +37,8 @@ export class PostController {
     private readonly createPostUseCase: CreatePostUseCase,
     @Inject('ListPostsUseCase')
     private readonly listPostsUseCase: ListPostsUseCase,
-    @Inject('FetchPostUseCase')
-    private readonly fetchPostUseCase: FetchPostUseCase,
+    @Inject('FindPostByIdUseCase')
+    private readonly findPostByIdUseCase: FindPostByIdUseCase,
   ) {}
 
   @Post()
@@ -93,7 +93,7 @@ export class PostController {
   })
   @ApiResponse({ status: 404, description: 'Post não encontrado.' })
   async findById(@Param('id') id: number): Promise<PostEntity> {
-    const post = await this.fetchPostUseCase.execute(id);
+    const post = await this.findPostByIdUseCase.execute(id);
 
     if (!post) {
       throw new NotFoundException(`Post com ID ${id} não encontrado.`);

@@ -25,7 +25,7 @@ describe('PostController', () => {
           },
         },
         {
-          provide: 'FetchPostUseCase',
+          provide: 'FindPostByIdUseCase',
           useValue: {
             execute: jest.fn(),
           },

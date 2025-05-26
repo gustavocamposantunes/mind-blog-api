@@ -1,5 +1,5 @@
 import { Post } from '@/domain/entities/post.entity';
 
-export interface FetchPostUseCase {
+export interface FindPostByIdUseCase {
   execute(id: number): Promise<Post | null>;
 }
