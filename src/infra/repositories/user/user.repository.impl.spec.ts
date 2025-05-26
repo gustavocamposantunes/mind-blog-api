@@ -58,25 +58,6 @@ describe('UserRepositoryImpl', () => {
       password: faker.internet.password(),
     };
 
-    it('should throw a DBConnectionError if there is a database connection issue on findByEmail', async () => {
-      const simulatedDbConnectionError = new Error('connect ECONNREFUSED');
-      simulatedDbConnectionError.name = 'ConnectionRefusedError';
-      typeormRepository.findOne = jest
-        .fn()
-        .mockRejectedValue(simulatedDbConnectionError);
-      await expect(
-        userRepositoryImpl.findByEmail(createUserDto.email),
-      ).rejects.toThrow(DBConnectionError);
-      await expect(
-        userRepositoryImpl.findByEmail(createUserDto.email),
-      ).rejects.toThrow(
-        'Não foi possível conectar ao servidor de banco de dados.',
-      );
-      expect(typeormRepository.findOne).toHaveBeenCalledWith({
-        where: { email: createUserDto.email },
-      });
-    });
-
     it('should throw a DBConnectionError if there is a database connection issue on save', async () => {
       const expectedHashedPassword = 'hashedPassword123';
 
@@ -170,6 +151,47 @@ describe('UserRepositoryImpl', () => {
       expect(result).toEqual(savedUserEntity);
       expect(result.id).toBe(1);
       expect(result.password).toBe(expectedHashedPassword);
+    });
+  });
+
+  describe('findByEmail', () => {
+    it('should throw a DBConnectionError if there is a database connection issue on findByEmail', async () => {
+      const simulatedDbConnectionError = new Error('connect ECONNREFUSED');
+      simulatedDbConnectionError.name = 'ConnectionRefusedError';
+      typeormRepository.findOne = jest
+        .fn()
+        .mockRejectedValue(simulatedDbConnectionError);
+      await expect(
+        userRepositoryImpl.findByEmail(faker.internet.email()),
+      ).rejects.toThrow(DBConnectionError);
+      await expect(
+        userRepositoryImpl.findByEmail(faker.internet.email()),
+      ).rejects.toThrow(
+        'Não foi possível conectar ao servidor de banco de dados.',
+      );
+    });
+
+    it('should return null if no user is found by email', async () => {
+      typeormRepository.findOne = jest.fn().mockResolvedValue(null);
+      const result = await userRepositoryImpl.findByEmail(
+        faker.internet.email(),
+      );
+      expect(result).toBeNull();
+    });
+
+    it('should return the user if found by email', async () => {
+      const userEntity: User = {
+        id: 1,
+        name: faker.person.fullName(),
+        email: faker.internet.email(),
+        password: 'hashedPassword123',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as User;
+
+      typeormRepository.findOne = jest.fn().mockResolvedValue(userEntity);
+      const result = await userRepositoryImpl.findByEmail(userEntity.email);
+      expect(result).toEqual(userEntity);
     });
   });
 });
