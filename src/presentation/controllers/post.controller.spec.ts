@@ -124,5 +124,18 @@ describe('PostController', () => {
       expect(findPostByIdUseCase.execute).toHaveBeenCalledWith(postId);
       expect(findPostByIdUseCase.execute).toHaveBeenCalledTimes(1);
     });
+
+    it('should find a post by ID correctly', async () => {
+      const postId = 1;
+      jest
+        .spyOn(findPostByIdUseCase, 'execute')
+        .mockResolvedValue(expectedPost);
+
+      const result = await postController.findById(postId);
+
+      expect(result).toEqual(expectedPost);
+      expect(findPostByIdUseCase.execute).toHaveBeenCalledWith(postId);
+      expect(findPostByIdUseCase.execute).toHaveBeenCalledTimes(1);
+    });
   });
 });
