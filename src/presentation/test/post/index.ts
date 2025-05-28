@@ -1,5 +1,6 @@
 import { Post } from '@/domain/entities/post.entity';
 import { CreatePostDto } from '@/presentation/dtos/create-post.dto';
+import { ListPostsResponseDto } from '@/presentation/dtos/list-posts.response.dto';
 import { faker } from '@faker-js/faker/.';
 
 export const postData: CreatePostDto = {
@@ -24,6 +25,13 @@ export const expectedPost: Post = {
   id: 2,
   publishedAt: faker.date.anytime(),
   updatedAt: faker.date.anytime(),
+};
+
+export const postsList: ListPostsResponseDto = {
+  posts: [expectedPost],
+  total: 1,
+  limit: 10,
+  page: 1,
 };
 
 export const mockRequest = {

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostController } from './post.controller';
 import { CreatePostUseCase, ListPostsUseCase } from '@/domain/usecases/post';
-import { expectedPost, mockRequest, postData } from '../test/post';
+import { expectedPost, mockRequest, postData, postsList } from '../test/post';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 
 describe('PostController', () => {
@@ -88,6 +88,19 @@ describe('PostController', () => {
         BadRequestException,
       );
       expect(listPostsUseCase.execute).toHaveBeenCalledWith(invalidQuery);
+      expect(listPostsUseCase.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('should list posts correctly', async () => {
+      jest.spyOn(listPostsUseCase, 'execute').mockResolvedValue(postsList);
+
+      const result = await postController.list({ page: 1, limit: 10 });
+
+      expect(result).toEqual(postsList);
+      expect(listPostsUseCase.execute).toHaveBeenCalledWith({
+        page: 1,
+        limit: 10,
+      });
       expect(listPostsUseCase.execute).toHaveBeenCalledTimes(1);
     });
   });
