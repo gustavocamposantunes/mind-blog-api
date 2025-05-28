@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostController } from './post.controller';
-import { CreatePostUseCase, ListPostsUseCase } from '@/domain/usecases/post';
+import {
+  CreatePostUseCase,
+  FindPostByIdUseCase,
+  ListPostsUseCase,
+} from '@/domain/usecases/post';
 import { expectedPost, mockRequest, postData, postsList } from '../test/post';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 
@@ -8,6 +12,7 @@ describe('PostController', () => {
   let postController: PostController;
   let createPostUseCase: CreatePostUseCase;
   let listPostsUseCase: ListPostsUseCase;
+  let findPostByIdUseCase: FindPostByIdUseCase;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -37,6 +42,9 @@ describe('PostController', () => {
     postController = module.get<PostController>(PostController);
     createPostUseCase = module.get<CreatePostUseCase>('CreatePostUseCase');
     listPostsUseCase = module.get<ListPostsUseCase>('ListPostsUseCase');
+    findPostByIdUseCase = module.get<FindPostByIdUseCase>(
+      'FindPostByIdUseCase',
+    );
   });
 
   it('should be defined', () => {
@@ -102,6 +110,19 @@ describe('PostController', () => {
         limit: 10,
       });
       expect(listPostsUseCase.execute).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('findById', () => {
+    it('should throw NotFoundException if post is not found', async () => {
+      const postId = 1;
+      jest.spyOn(findPostByIdUseCase, 'execute').mockResolvedValue(null);
+
+      await expect(postController.findById(postId)).rejects.toThrow(
+        `Post com ID ${postId} não encontrado.`,
+      );
+      expect(findPostByIdUseCase.execute).toHaveBeenCalledWith(postId);
+      expect(findPostByIdUseCase.execute).toHaveBeenCalledTimes(1);
     });
   });
 });
