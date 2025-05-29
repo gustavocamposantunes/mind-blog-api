@@ -3,6 +3,9 @@ import { PostRepositoryImpl } from './post.repository.impl';
 import { Post } from '@/domain/entities';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CreatePostDto } from '@/presentation/dtos/create-post.dto';
+import { faker } from '@faker-js/faker/.';
+import { DBConnectionError } from '@/domain/errors';
 
 describe('PostRepositoryImpl', () => {
   let postRepositoryImpl: PostRepositoryImpl;
@@ -13,6 +16,7 @@ describe('PostRepositoryImpl', () => {
   beforeEach(async () => {
     const typeormRepositoryMock: MockType<Repository<Post>> = {
       save: jest.fn(),
+      create: jest.fn(),
       findAndCount: jest.fn(),
       findOne: jest.fn(),
     };
@@ -39,5 +43,54 @@ describe('PostRepositoryImpl', () => {
 
   it('should be defined', () => {
     expect(postRepositoryImpl).toBeDefined();
+  });
+
+  describe('save', () => {
+    const createPostDto: CreatePostDto = {
+      author_id: faker.number.int(),
+      content: faker.commerce.productDescription(),
+      title: faker.commerce.productName(),
+    };
+    it('should throw a DBConnectionError if there is a database connection issue on save', async () => {
+      const postInstanceToBeCreatedAndSaved: Post = {
+        author: {
+          createdAt: faker.date.anytime(),
+          email: faker.internet.email(),
+          id: createPostDto.author_id,
+          name: faker.person.fullName(),
+          password: faker.internet.password(),
+          posts: [],
+          updatedAt: faker.date.anytime(),
+        },
+        author_id: createPostDto.author_id,
+        content: faker.commerce.productDescription(),
+        id: faker.number.int(),
+        publishedAt: faker.date.anytime(),
+        title: faker.commerce.product(),
+        updatedAt: faker.date.anytime(),
+      };
+
+      const simulatedDbConnectionError = new Error(
+        'connect ECONNREFUSED 127.0.0.1:3306',
+      );
+      simulatedDbConnectionError.name = 'ConnectionRefusedError';
+
+      typeormRepository.create.mockReturnValue(postInstanceToBeCreatedAndSaved);
+      typeormRepository.save.mockRejectedValue(simulatedDbConnectionError);
+
+      await expect(postRepositoryImpl.save(createPostDto)).rejects.toThrow(
+        DBConnectionError,
+      );
+      await expect(postRepositoryImpl.save(createPostDto)).rejects.toThrow(
+        'Não foi possível conectar ao servidor de banco de dados.',
+      );
+
+      expect(typeormRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining(createPostDto),
+      );
+      expect(typeormRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining(postInstanceToBeCreatedAndSaved),
+      );
+    });
   });
 });
