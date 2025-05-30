@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { CreatePostDto } from '@/presentation/dtos/create-post.dto';
 import { faker } from '@faker-js/faker/.';
 import { DBConnectionError } from '@/domain/errors';
+import { postsList } from '@/presentation/test/post';
 
 describe('PostRepositoryImpl', () => {
   let postRepositoryImpl: PostRepositoryImpl;
@@ -128,6 +129,16 @@ describe('PostRepositoryImpl', () => {
       await expect(postRepositoryImpl.list(queryParams)).rejects.toThrow(
         'Não foi possível conectar ao servidor de banco de dados.',
       );
+    });
+
+    it('should return the post list', async () => {
+      typeormRepository.findAndCount = jest
+        .fn()
+        .mockResolvedValue([postsList.posts, postsList.total]);
+
+      const result = await postRepositoryImpl.list({});
+
+      expect(result).toEqual(postsList);
     });
   });
 });
