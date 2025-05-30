@@ -141,4 +141,22 @@ describe('PostRepositoryImpl', () => {
       expect(result).toEqual(postsList);
     });
   });
+
+  describe('findById', () => {
+    it('should throw a DBConnectionError if there is a database connection issue on findById', async () => {
+      const simulatedDbConnectionError = new Error('connect ECONNREFUSED');
+      simulatedDbConnectionError.name = 'ConnectionRefusedError';
+      typeormRepository.findOne = jest
+        .fn()
+        .mockRejectedValue(simulatedDbConnectionError);
+
+      const postId = faker.number.int();
+      await expect(postRepositoryImpl.findById(postId)).rejects.toThrow(
+        DBConnectionError,
+      );
+      await expect(postRepositoryImpl.findById(postId)).rejects.toThrow(
+        'Não foi possível conectar ao servidor de banco de dados.',
+      );
+    });
+  });
 });
