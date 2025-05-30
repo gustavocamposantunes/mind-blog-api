@@ -111,4 +111,23 @@ describe('PostRepositoryImpl', () => {
       expect(result.id).toBe(postInstanceToBeCreatedAndSaved.id);
     });
   });
+
+  describe('list', () => {
+    it('should throw a DBConnectionError if there is a database connection issue on list', async () => {
+      const simulatedDbConnectionError = new Error('connect ECONNREFUSED');
+      simulatedDbConnectionError.name = 'ConnectionRefusedError';
+      typeormRepository.findAndCount = jest
+        .fn()
+        .mockRejectedValue(simulatedDbConnectionError);
+
+      const queryParams = { page: 1, limit: 10 };
+
+      await expect(postRepositoryImpl.list(queryParams)).rejects.toThrow(
+        DBConnectionError,
+      );
+      await expect(postRepositoryImpl.list(queryParams)).rejects.toThrow(
+        'Não foi possível conectar ao servidor de banco de dados.',
+      );
+    });
+  });
 });
