@@ -51,25 +51,25 @@ describe('PostRepositoryImpl', () => {
       content: faker.commerce.productDescription(),
       title: faker.commerce.productName(),
     };
-    it('should throw a DBConnectionError if there is a database connection issue on save', async () => {
-      const postInstanceToBeCreatedAndSaved: Post = {
-        author: {
-          createdAt: faker.date.anytime(),
-          email: faker.internet.email(),
-          id: createPostDto.author_id,
-          name: faker.person.fullName(),
-          password: faker.internet.password(),
-          posts: [],
-          updatedAt: faker.date.anytime(),
-        },
-        author_id: createPostDto.author_id,
-        content: faker.commerce.productDescription(),
-        id: faker.number.int(),
-        publishedAt: faker.date.anytime(),
-        title: faker.commerce.product(),
+    const postInstanceToBeCreatedAndSaved: Post = {
+      author: {
+        createdAt: faker.date.anytime(),
+        email: faker.internet.email(),
+        id: createPostDto.author_id,
+        name: faker.person.fullName(),
+        password: faker.internet.password(),
+        posts: [],
         updatedAt: faker.date.anytime(),
-      };
+      },
+      author_id: createPostDto.author_id,
+      content: faker.commerce.productDescription(),
+      id: faker.number.int(),
+      publishedAt: faker.date.anytime(),
+      title: faker.commerce.product(),
+      updatedAt: faker.date.anytime(),
+    } as Post;
 
+    it('should throw a DBConnectionError if there is a database connection issue on save', async () => {
       const simulatedDbConnectionError = new Error(
         'connect ECONNREFUSED 127.0.0.1:3306',
       );
@@ -91,6 +91,24 @@ describe('PostRepositoryImpl', () => {
       expect(typeormRepository.save).toHaveBeenCalledWith(
         expect.objectContaining(postInstanceToBeCreatedAndSaved),
       );
+    });
+
+    it('should create and save a new post successfully', async () => {
+      typeormRepository.create.mockReturnValue(createPostDto);
+      typeormRepository.save.mockReturnValue(postInstanceToBeCreatedAndSaved);
+
+      const result = await postRepositoryImpl.save(createPostDto);
+
+      expect(typeormRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining(createPostDto),
+      );
+
+      expect(typeormRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining(createPostDto),
+      );
+
+      expect(result).toEqual(postInstanceToBeCreatedAndSaved);
+      expect(result.id).toBe(postInstanceToBeCreatedAndSaved.id);
     });
   });
 });
