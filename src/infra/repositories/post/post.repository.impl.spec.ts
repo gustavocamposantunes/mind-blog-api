@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { CreatePostDto } from '@/presentation/dtos/create-post.dto';
 import { faker } from '@faker-js/faker/.';
 import { DBConnectionError } from '@/domain/errors';
-import { postsList } from '@/presentation/test/post';
+import { expectedPost, postsList } from '@/presentation/test/post';
 
 describe('PostRepositoryImpl', () => {
   let postRepositoryImpl: PostRepositoryImpl;
@@ -157,6 +157,16 @@ describe('PostRepositoryImpl', () => {
       await expect(postRepositoryImpl.findById(postId)).rejects.toThrow(
         'Não foi possível conectar ao servidor de banco de dados.',
       );
+    });
+
+    it('should find a post by id', async () => {
+      typeormRepository.findOne = jest.fn().mockResolvedValue(expectedPost);
+
+      const postId = faker.number.int();
+
+      const result = await postRepositoryImpl.findById(postId);
+
+      expect(result).toEqual(expectedPost);
     });
   });
 });
